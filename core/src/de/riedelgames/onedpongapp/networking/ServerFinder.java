@@ -51,7 +51,6 @@ public class ServerFinder implements Runnable {
 				Gdx.app.log("Network: ", "IO Error receving datagram packet");
 				e.printStackTrace();
 			}
-			
 		}
 	}
 

@@ -23,42 +23,6 @@ import com.badlogic.gdx.InputProcessor;
 public class NetworkAppClient implements Runnable,InputProcessor {
 
 	
-	/**
-	 * Size of the package size identifier in bytes.
-	 */
-	private static final int PACKAGE_SIZE_IDENTIFIER_BYTE_LENGTH = 1;
-	
-	/**
-	 * Handshake Package.
-	 */
-	private static final int HANDSHAKE = 100;
-	
-	/**
-	 * Handshake Response Package.
-	 */
-	private static final int HANDSHAKE_RESPONSE = 101;
-	
-	/**
-	 * Keys Pressed Package
-	 */
-	private static final int KEYS_PRESSED = 201;
-	
-	/**
-	 * Key Pressed Response Package.
-	 */
-	private static final int KEYS_PRESSED_RESPONSE = 202;
-	private static final int KEYS_PRESSED_HANDELED = 1;
-	
-	/**
-	 * Key Down.
-	 */
-	private static final int KEY_DOWN = -1;
-	
-	/**
-	 * Key Up.
-	 */
-	private static final int KEY_UP = 1;
-	
 	
 	private String hostName;
 	private int port;
@@ -92,15 +56,40 @@ public class NetworkAppClient implements Runnable,InputProcessor {
 			e.printStackTrace();
 		}
 	}
+	
+	public boolean sendNamePackage(String name) {
+		char[] nameArray = name.toCharArray();
+		
+		int packageLength = nameArray.length;
+		int[] arrayToSend = new int[packageLength + 2];
+		arrayToSend[0] = NetworkCodes.NAME;
+		arrayToSend[1] = packageLength;
+		for (int i = 0; i < nameArray.length; i++) {
+			arrayToSend[i + 2] = nameArray[i];
+		}
+		try {
+			writeIntArray(NetworkCodes.NAME, arrayToSend);
+			int[] responseArray = readIntArray(NetworkCodes.NAME_RESPONSE);
+			if (responseArray[0] == NetworkCodes.NAME_ACCEPTED) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	
 	private boolean sendKeyDownPackage(int keycode) {
 		int packageLength = 2;
-		int[] arrayToSend = new int[]{KEYS_PRESSED, packageLength, keycode, KEY_DOWN};
+		int[] arrayToSend = new int[]{NetworkCodes.KEYS_PRESSED, packageLength, keycode, NetworkCodes.KEY_DOWN};
 		try {
-			writeIntArray(KEYS_PRESSED, arrayToSend);
-			int[] responseArray = readIntArray(KEYS_PRESSED_RESPONSE);
-			if (responseArray[0] == KEYS_PRESSED_HANDELED) {
+			writeIntArray(NetworkCodes.KEYS_PRESSED, arrayToSend);
+			int[] responseArray = readIntArray(NetworkCodes.KEYS_PRESSED_RESPONSE);
+			if (responseArray[0] == NetworkCodes.KEYS_PRESSED_HANDELED) {
 				return true;
 			} else {
 				return false;
@@ -116,11 +105,11 @@ public class NetworkAppClient implements Runnable,InputProcessor {
 	private boolean sendKeyUpPackage(int keycode) {
 		
 		int packageLength = 2;
-		int[] arrayToSend = new int[]{KEYS_PRESSED, packageLength, keycode, KEY_UP};
+		int[] arrayToSend = new int[]{NetworkCodes.KEYS_PRESSED, packageLength, keycode, NetworkCodes.KEY_UP};
 		try {
-			writeIntArray(KEYS_PRESSED, arrayToSend);
-			int[] responseArray = readIntArray(KEYS_PRESSED_RESPONSE);
-			if (responseArray[0] == KEYS_PRESSED_HANDELED) {
+			writeIntArray(NetworkCodes.KEYS_PRESSED, arrayToSend);
+			int[] responseArray = readIntArray(NetworkCodes.KEYS_PRESSED_RESPONSE);
+			if (responseArray[0] == NetworkCodes.KEYS_PRESSED_HANDELED) {
 				return true;
 			} else {
 				return false;
@@ -183,7 +172,7 @@ public class NetworkAppClient implements Runnable,InputProcessor {
 	@Override
 	public boolean touchDown(int screenX, int screenY, int pointer, int button) {
 		
-		return false;
+		return sendKeyDownPackage(NetworkCodes.MAIN_KEY);
 	}
 
 
@@ -192,7 +181,7 @@ public class NetworkAppClient implements Runnable,InputProcessor {
 	@Override
 	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
 		// TODO Auto-generated method stub
-		return false;
+		return sendKeyUpPackage(NetworkCodes.MAIN_KEY);
 	}
 
 

@@ -39,16 +39,26 @@ public class OneDPongApp extends ApplicationAdapter {
 		batch.begin();
 		batch.draw(img, 0, 0);
 		batch.end();
-		
-		long currentTime = System.nanoTime();
-		long nanoSec = 1000000000;
-		if (currentTime - lastTime > 5 * nanoSec) {
-			HashMap<SocketAddress, String> serverList = serverFinder.getServerList();
-			Gdx.app.log("Network: ", "Current server list");
-			for (SocketAddress key : serverList.keySet()) {
-				Gdx.app.log(key.toString(), serverList.get(key));
+		boolean serverFound = false;
+		boolean connected = false;
+		if (!serverFound) {
+			long currentTime = System.nanoTime();
+			long nanoSec = 1000000000;
+			if (currentTime - lastTime > 5 * nanoSec) {
+				HashMap<SocketAddress, String> serverList = serverFinder.getServerList();
+				Gdx.app.log("Network: ", "Current server list");
+				for (SocketAddress key : serverList.keySet()) {
+					Gdx.app.log(key.toString(), serverList.get(key));
+				}
+				lastTime = System.nanoTime();
 			}
-			lastTime = System.nanoTime();
+			if (!serverFinder.getServerList().isEmpty()) {
+				serverFound = true;
+			}
+		} else if (connected){
+			SocketAddress server = serverFinder.getServerList().keySet().iterator().next();
 		}
+		
+		
 	}
 }
