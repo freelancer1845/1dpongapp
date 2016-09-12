@@ -1,25 +1,32 @@
 package de.riedelgames.onedpongapp;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
-import de.riedelgames.onedpongapp.networking.NetworkAppClient;
+import de.riedelgames.core.networking.api.constants.Keys;
+import de.riedelgames.core.networking.api.constants.NetworkingConstants;
+import de.riedelgames.core.networking.api.server.ClientNetworkTunnel;
+import de.riedelgames.core.networking.api.server.UDPClient;
+import de.riedelgames.core.networking.impl.server.UDPClientImpl;
+import de.riedelgames.core.networking.impl.server.UDPConnection;
 import de.riedelgames.onedpongapp.networking.ServerFinder;
 
 public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     SpriteBatch batch;
     Texture img;
-    private NetworkAppClient networkAppClient;
     private ServerFinder serverFinder;
+
+    private ClientNetworkTunnel networkTunnel;
+
     private long lastTime = 0;
-    private boolean keydown = false;
 
     private boolean serverFound = false;
 
@@ -30,8 +37,8 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
         batch = new SpriteBatch();
         img = new Texture("badlogic.jpg");
         // networkAppClient = new NetworkAppClient("192.168.178.29", 4000);
-        serverFinder = new ServerFinder(4000);
-        new Thread(serverFinder).start();
+        serverFinder = new ServerFinder(NetworkingConstants.DEFAULT_PORT);
+        serverFinder.start();
         lastTime = System.nanoTime();
         Gdx.input.setInputProcessor(this);
 
@@ -49,24 +56,21 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
             long currentTime = System.nanoTime();
             long nanoSec = 1000000000;
             if (currentTime - lastTime > 5 * nanoSec) {
-                HashMap<String, Integer> serverList = serverFinder.getServerList();
+                HashMap<InetAddress, Integer> serverList = serverFinder.getServerList();
                 Gdx.app.log("Network: ", "Current server list");
-                for (String key : serverList.keySet()) {
-                    Gdx.app.log(key, String.valueOf(serverList.get(key)));
+                for (InetAddress key : serverList.keySet()) {
+                    Gdx.app.log(key.getHostAddress(), String.valueOf(serverList.get(key)));
                 }
                 lastTime = System.nanoTime();
             }
             if (!serverFinder.getServerList().isEmpty()) {
+                serverFinder.stop();
                 serverFound = true;
-                String serverIP = serverFinder.getServerList().keySet().iterator().next();
-                int port = serverFinder.getServerList().get(serverIP);
-                networkAppClient = new NetworkAppClient(serverIP, port);
-                new Thread(networkAppClient).start();
-                while (!networkAppClient.isConnected()) {
-                    Gdx.app.log("Network", "not connected");
-                }
+                InetAddress serverAdress = serverFinder.getServerList().keySet().iterator().next();
+                int port = serverFinder.getServerList().get(serverAdress);
+                networkTunnel = new ClientNetworkTunnel(serverAdress, port);
                 connected = true;
-                networkAppClient.sendNamePackage("Freelancer");
+                System.out.println("Successfully Connected");
             }
         } else if (connected) {
 
@@ -96,11 +100,9 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (connected) {
             if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
-                long time = System.currentTimeMillis();
-                networkAppClient.keyDown(Input.Keys.DOWN);
-                Gdx.app.log("TimeNeeded: ", Long.toString(System.currentTimeMillis() - time));
+                networkTunnel.fireInputKeyDown(Keys.KEY_DOWN);
             } else {
-                networkAppClient.keyDown(Input.Keys.UP);
+                networkTunnel.fireInputKeyDown(Keys.KEY_UP);
             }
 
         }
@@ -111,9 +113,9 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (connected) {
             if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
-                networkAppClient.keyUp(Input.Keys.DOWN);
+                networkTunnel.fireInputKeyUp(Keys.KEY_DOWN);
             } else {
-                networkAppClient.keyUp(Input.Keys.UP);
+                networkTunnel.fireInputKeyUp(Keys.KEY_UP);
             }
         }
         return true;

@@ -4,28 +4,50 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.net.SocketAddress;
+import java.net.SocketException;
 import java.util.HashMap;
-import java.util.Map;
-
 import com.badlogic.gdx.Gdx;
 
+import de.riedelgames.core.networking.api.constants.NetworkingConstants;
+
 public class ServerFinder implements Runnable {
-    /**
-     * Group Name for UDP
-     */
-    private static final String GROUPNAME = "229.127.12.17";
+
+    /** Thread the finder runs on. */
+    private Thread serverFinderThread;
+
+    /** Is vissible. */
+    private boolean visible;
 
     private int portNumber;
 
     private MulticastSocket socket;
     private InetAddress group;
 
-    private HashMap<String, Integer> serverList;
+    private HashMap<InetAddress, Integer> serverList;
 
     public ServerFinder(int portNumber) {
         this.portNumber = portNumber;
-        serverList = new HashMap<String, Integer>();
+        serverList = new HashMap<InetAddress, Integer>();
+    }
+
+    public void start() {
+        visible = true;
+        if (serverFinderThread == null) {
+            serverFinderThread = new Thread(this);
+        }
+        serverFinderThread.start();
+    }
+
+    public void stop() {
+        visible = false;
+        if (serverFinderThread != null) {
+            serverFinderThread.interrupt();
+            while (!serverFinderThread.isInterrupted())
+                ;
+            socket.close();
+            ;
+            serverFinderThread = null;
+        }
     }
 
     @Override
@@ -33,7 +55,7 @@ public class ServerFinder implements Runnable {
 
         try {
             socket = new MulticastSocket(portNumber);
-            group = InetAddress.getByName(GROUPNAME);
+            group = InetAddress.getByName(NetworkingConstants.GROUPNAME);
             socket.joinGroup(group);
             socket.setSoTimeout(5000);
         } catch (IOException e) {
@@ -41,12 +63,14 @@ public class ServerFinder implements Runnable {
             e.printStackTrace();
         }
         DatagramPacket packet;
-        while (true) {
+        while (visible) {
             byte[] buf = new byte[256];
             packet = new DatagramPacket(buf, buf.length);
             try {
                 socket.receive(packet);
-                serverList.put(packet.getAddress().getHostAddress(), packet.getPort());
+                serverList.put(packet.getAddress(), packet.getPort());
+            } catch (SocketException e) {
+                // do nothing
             } catch (IOException e) {
                 Gdx.app.log("Network: ", "IO Error receving datagram packet");
                 e.printStackTrace();
@@ -54,7 +78,7 @@ public class ServerFinder implements Runnable {
         }
     }
 
-    public HashMap<String, Integer> getServerList() {
+    public HashMap<InetAddress, Integer> getServerList() {
         return serverList;
     }
 
