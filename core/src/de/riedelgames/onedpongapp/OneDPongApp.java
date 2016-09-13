@@ -99,12 +99,12 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (connected) {
-            // if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
-            // networkTunnel.fireInputKeyDown(Keys.KEY_DOWN);
-            // } else {
-            // networkTunnel.fireInputKeyDown(Keys.KEY_UP);
-            // }
-            networkTunnel.fireInputKeyDown(Keys.FIRE);
+            if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
+                networkTunnel.fireInputKeyDown(Keys.KEY_DOWN);
+            } else {
+                networkTunnel.fireInputKeyDown(Keys.KEY_UP);
+            }
+            // networkTunnel.fireInputKeyDown(Keys.FIRE);
 
         }
         return true;
@@ -113,12 +113,12 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (connected) {
-            // if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
-            // networkTunnel.fireInputKeyUp(Keys.KEY_DOWN);
-            // } else {
-            // networkTunnel.fireInputKeyUp(Keys.KEY_UP);
-            // }
-            networkTunnel.fireInputKeyUp(Keys.FIRE);
+            if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
+                networkTunnel.fireInputKeyUp(Keys.KEY_DOWN);
+            } else {
+                networkTunnel.fireInputKeyUp(Keys.KEY_UP);
+            }
+            // networkTunnel.fireInputKeyUp(Keys.FIRE);
         }
         return true;
     }
