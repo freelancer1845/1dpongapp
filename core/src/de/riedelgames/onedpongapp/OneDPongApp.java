@@ -1,11 +1,11 @@
 package de.riedelgames.onedpongapp;
 
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.HashMap;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
@@ -14,9 +14,6 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import de.riedelgames.core.networking.api.constants.Keys;
 import de.riedelgames.core.networking.api.constants.NetworkingConstants;
 import de.riedelgames.core.networking.api.server.ClientNetworkTunnel;
-import de.riedelgames.core.networking.api.server.UDPClient;
-import de.riedelgames.core.networking.impl.server.UDPClientImpl;
-import de.riedelgames.core.networking.impl.server.UDPConnection;
 import de.riedelgames.onedpongapp.networking.ServerFinder;
 
 public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
@@ -99,12 +96,14 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchDown(int screenX, int screenY, int pointer, int button) {
         if (connected) {
-            if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
+            if (screenX > Gdx.graphics.getDisplayMode().width * 2.0 / 3) {
                 networkTunnel.fireInputKeyDown(Keys.KEY_DOWN);
+            } else if (screenX > Gdx.graphics.getDisplayMode().width / 3) {
+                networkTunnel.fireInputKeyDown((byte) Input.Keys.ENTER);
             } else {
                 networkTunnel.fireInputKeyDown(Keys.KEY_UP);
             }
-            // networkTunnel.fireInputKeyDown(Keys.FIRE);
+            networkTunnel.fireInputKeyDown(Keys.FIRE);
 
         }
         return true;
@@ -113,12 +112,14 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
     @Override
     public boolean touchUp(int screenX, int screenY, int pointer, int button) {
         if (connected) {
-            if (screenX > Gdx.graphics.getDisplayMode().width / 2) {
+            if (screenX > Gdx.graphics.getDisplayMode().width * 2.0 / 3) {
                 networkTunnel.fireInputKeyUp(Keys.KEY_DOWN);
+            } else if (screenX > Gdx.graphics.getDisplayMode().width / 3) {
+                networkTunnel.fireInputKeyUp((byte) Input.Keys.ENTER);
             } else {
                 networkTunnel.fireInputKeyUp(Keys.KEY_UP);
             }
-            // networkTunnel.fireInputKeyUp(Keys.FIRE);
+            networkTunnel.fireInputKeyUp(Keys.FIRE);
         }
         return true;
     }
