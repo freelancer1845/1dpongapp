@@ -38,11 +38,15 @@ public class OneDPongApp extends ApplicationAdapter implements InputProcessor {
         serverFinder.start();
         lastTime = System.nanoTime();
         Gdx.input.setInputProcessor(this);
+        Gdx.input.setCatchBackKey(true);
 
     }
 
     @Override
     public void render() {
+        if (Gdx.input.isKeyPressed(Input.Keys.BACK)) {
+            networkTunnel.fireInputKeyDown((byte) Input.Keys.ESCAPE);
+        }
         Gdx.gl.glClearColor(1, 0, 0, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         batch.begin();

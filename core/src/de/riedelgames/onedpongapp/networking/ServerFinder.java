@@ -6,6 +6,7 @@ import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.util.HashMap;
+
 import com.badlogic.gdx.Gdx;
 
 import de.riedelgames.core.networking.api.constants.NetworkingConstants;
@@ -30,6 +31,7 @@ public class ServerFinder implements Runnable {
         serverList = new HashMap<InetAddress, Integer>();
     }
 
+    /** Starts the server finder. */
     public void start() {
         visible = true;
         if (serverFinderThread == null) {
@@ -38,14 +40,14 @@ public class ServerFinder implements Runnable {
         serverFinderThread.start();
     }
 
+    /** Stops the server finder. */
     public void stop() {
         visible = false;
         if (serverFinderThread != null) {
             serverFinderThread.interrupt();
-            while (!serverFinderThread.isInterrupted())
-                ;
-            socket.close();
-            ;
+            while (!serverFinderThread.isInterrupted()) {
+            }
+            socket.close();;
             serverFinderThread = null;
         }
     }
