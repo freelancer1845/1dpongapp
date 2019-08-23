@@ -1,3 +1,3 @@
 include 'desktop', 'android', 'ios', 'html', 'core'
 include ':de.riedelgames.core.networking'
-project(':de.riedelgames.core.networking').projectDir = new File(settingsDir, '../../Repositories/networking/de.riedelgames.core.networking')
+project(':de.riedelgames.core.networking').projectDir = new File(settingsDir, '../networking/de.riedelgames.core.networking')
